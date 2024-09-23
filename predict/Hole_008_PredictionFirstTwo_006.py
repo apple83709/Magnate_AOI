@@ -139,9 +139,9 @@ def main(direction, X_train, X_test, prod_name, input_target, all_location):
         # with open(train_feature_filepath, 'rb') as f:
         #     train_outputs_reduced = pickle.load(f)
         
-        # embedding_vectors_reduced_train = np.load('../result/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy')
-        embedding_vectors_reduced_train = np.load('../result/embedding_vectors_reduced_trains/'+prod_name+'/embedding_vectors_reduced_train_'+direction+'.npy')
-        weight = torch.load('../result/models/'+prod_name+'/save_'+direction+'.pt', map_location=device)
+        # embedding_vectors_reduced_train = np.load('result/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy')
+        embedding_vectors_reduced_train = np.load('result/embedding_vectors_reduced_trains/'+prod_name+'/embedding_vectors_reduced_train_'+direction+'.npy')
+        weight = torch.load('result/models/'+prod_name+'/save_'+direction+'.pt', map_location=device)
         # weight = torch.load('save.pt')
         model.load_state_dict(weight)
         model.eval()
@@ -221,7 +221,7 @@ def main(direction, X_train, X_test, prod_name, input_target, all_location):
     #     83x448x56x56
     #     
     # =============================================================================
-    with open('../result/idxs/'+prod_name+'/idx_'+direction+'.pkl', 'rb') as f:
+    with open('result/idxs/'+prod_name+'/idx_'+direction+'.pkl', 'rb') as f:
         idx = pickle.load(f)
 
     # randomly select d dimension
@@ -255,10 +255,10 @@ def main(direction, X_train, X_test, prod_name, input_target, all_location):
     # print('-------embedding_vectors_reduced_train:'+ str(embedding_vectors_reduced_train[:,:,0].shape))
     # print('-------embedding_vectors_reduced_test:'+ str(embedding_vectors_reduced_test[:,:,0].shape))
 
-    with open('../result/con_invs/'+prod_name+'/conv_invs_'+direction+'.pkl', 'rb') as f:
+    with open('result/con_invs/'+prod_name+'/conv_invs_'+direction+'.pkl', 'rb') as f:
         conv_invs = pickle.load(f)
     
-    with open('../result/sample_trains/'+prod_name+'/sample_trains_'+direction+'.pkl', 'rb') as f:
+    with open('result/sample_trains/'+prod_name+'/sample_trains_'+direction+'.pkl', 'rb') as f:
         sample_trains = pickle.load(f)
     
     for i in range(56*56):
@@ -273,7 +273,7 @@ def main(direction, X_train, X_test, prod_name, input_target, all_location):
         diagonal_elements = np.diagonal(maha_full).tolist()
         dist_list.append(diagonal_elements)
 
-    # with open('../../trainning/result/con_invs/conv_invs_'+direction+'.pkl', 'wb') as f:
+    # with open('trainning/result/con_invs/conv_invs_'+direction+'.pkl', 'wb') as f:
     #   pickle.dump(conv_invs, f)
     dist_list = np.array(dist_list).transpose(1, 0).reshape(B,56,56)
 
@@ -332,23 +332,30 @@ def main(direction, X_train, X_test, prod_name, input_target, all_location):
     #     plt.axis(False)
     # plt.show()
 
-    # fig.savefig('../demo_image_3.jpg')
+    # fig.savefig('demo_image_3.jpg')
 
     
     fail = []
-    threshhold = 100/max_score
-    # print(scores_min.shape[0])
+    threshhold = 100
     for j in range(0, scores_min.shape[0]):
-        max_value = np.max(scores_min[j])
-        if max_value > threshhold:
-            has_positive = True
-        else:
-            has_positive = False
-            
-        if has_positive == True:
-            fail.append(j)
+        tmp_loc = 0
+        for y in range(3):  
+            for x in range(3):  
+                tmp_loc += 1
+                arr = scores_min[j]
+                sub_array = arr[16+x*64:16+(x+1)*64, 16+y*64:16+(y+1)*64]
+                if(np.sum(sub_array > 0.3)>threshhold):
+                    # 計算第幾個點
+                    fail.append(j * 9 + tmp_loc - 1)
 
+    print('len(all_location)', len(all_location['location']))
+    print('len(fail)', len(fail))
 
+    print('============fail[0]', fail[0])
+    colored_image = cm.jet(scores_min[8])
+    padim_image = Image.fromarray((colored_image * 255).astype(np.uint8))
+    padim_array = np.array(padim_image)
+    cv2.imwrite('images/'+prod_name+'/pred/tmp_'+direction+'.png', padim_array)
     loaded_data = all_location
     for i in range(0, len(fail)):
         all_fails.append([loaded_data['location'].iloc[fail[i]].large_x, loaded_data['location'].iloc[fail[i]].large_y])
@@ -364,7 +371,7 @@ def main(direction, X_train, X_test, prod_name, input_target, all_location):
         # 紅色
         image[large_y-16:large_y+16,large_x-16:large_x+16,2] = 255
     
-    cv2.imwrite('../images/partno1/pred/'+direction+'.png', image)
+    cv2.imwrite('images/'+prod_name+'/pred/'+direction+'.png', image)
     
     return len(fail)
 

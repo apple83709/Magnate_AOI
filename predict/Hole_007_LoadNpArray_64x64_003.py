@@ -17,60 +17,57 @@ import warnings
 warnings.filterwarnings('ignore')
 import pickle
 
-
-    
-    
 # =============================================================================
 # 
-# load the source and destination images and positions
+# create directory
 # 
 # =============================================================================
-
 def main(direction, prod_name):
-    # =============================================================================
-    # 
-    # create directory
-    # 
-    # =============================================================================
-
-    FileLoc = '../result/06_SortedTrainTest/'+prod_name
+    loc = 1
+    FileLoc = 'result/06_SortedTrainTest/'+prod_name
     try:
         os.mkdir(FileLoc)
     except OSError:
-        a=1
-    #     print ("Creation of the directory %s failed" % FileLoc)
-    # else:
-    #     print ("Successfully created the directory %s " % FileLoc)
+        print ("Creation of the directory %s failed" % FileLoc)
+    else:
+        print ("Successfully created the directory %s " % FileLoc)
         
-
+        
+    # =============================================================================
+    # 
+    # load the source and destination images and positions
+    # 
+    # =============================================================================
+    
+    
+    # direction = 'N'
     numpy_src = np.empty((0,32,32))
     for loop in range (1,7):
         
-        file_src = '../result/05_RegionImage/'+prod_name+'/np-src-'+direction+'-'+str(loop) + '.npy'
+        file_src = 'result/05_RegionImage/'+prod_name+'/np-src-'+direction+'-'+str(loop) + '.npy'
         tmp_src = np.load(file_src)
         # Append the array vertically
         numpy_src = np.vstack((numpy_src, tmp_src))
         
-
-
-
-
+    
+    
+    
+    
     numpy_dst = np.empty((0,32,32))
-    for i in range (1,7):
-
-        file_dst = '../result/05_RegionImage/'+prod_name+'/np-dst-'+direction+'-'+str(i) + '.npy'
+    for idx in range (1,7):
+    
+        file_dst = 'result/05_RegionImage/'+prod_name+'/np-dst-'+direction+'-'+str(idx) + '.npy'
         tmp_dst = np.load(file_dst)
         # Append the array vertically
         numpy_dst = np.vstack((numpy_dst, tmp_dst))
-
-
+    
+    
     # =============================================================================
     # 
     # convert the train data
     # 
     # =============================================================================
-
-
+    
     if(len(numpy_src) % 9 != 0):
         X_train = np.zeros((int(len(numpy_src)/9)+1,3,224,224)).astype(np.uint8)
     else:
@@ -142,10 +139,13 @@ def main(direction, prod_name):
                 X_train[idx,:,13+64:13+2*64,13+2*64:13+3*64] = x64s[r2+tmp-1]
                 
             X_train[idx,:,13+2*64:13+3*64,13+2*64:13+3*64] = x64s[r2+tmp-1]
+            
+    
+    # print('123')
         
-    image_src = np.transpose( X_train[int(len(x64s)/9),:,:,:], (1, 2, 0))    
-    plt.imshow(image_src)
-    plt.show()
+    # image_src = np.transpose( X_train[loc,:,:,:], (1, 2, 0))    
+    # plt.imshow(image_src)
+    # plt.show()
     
     
     # =============================================================================
@@ -166,7 +166,10 @@ def main(direction, prod_name):
         x32 = np.stack([x_tmp] * 3, axis=0)
         x64 = np.repeat(np.repeat(x32, 2, axis=1), 2, axis=2)
         x64s.append(x64)
-    
+        # if(i==262):
+        #     image_dst = np.transpose(x64, (1, 2, 0))  
+        #     plt.imshow(image_dst)
+        #     plt.show()
 
     for idx in range(0, int(len(x64s)/9)):
         r2 = idx * 9
@@ -225,11 +228,12 @@ def main(direction, prod_name):
                 
             X_test[idx,:,13+2*64:13+3*64,13+2*64:13+3*64] = x64s[r2+tmp-1]
         
-    image_dst = np.transpose( X_test[ int(len(x64s)/9),:,:,:], (1, 2, 0))    
-    plt.imshow(image_dst)
-    plt.show()
+    # image_dst = np.transpose( X_test[loc,:,:,:], (1, 2, 0))    
+    # plt.imshow(image_dst)
+    # plt.show()
     
     
+    # print('456')
     X_train_2 = np.zeros((len(numpy_src),3,224,224)).astype(np.uint8)
 
 
@@ -253,24 +257,26 @@ def main(direction, prod_name):
         X_train_2[i,:,13+64:13+2*64,13+2*64:13+3*64] = x64
         X_train_2[i,:,13+2*64:13+3*64,13+2*64:13+3*64] = x64
     
-    image_src2 = np.transpose( X_train_2[0,:,:,:], (1, 2, 0))    
-    plt.imshow(image_src2)
-    plt.show()
+    # image_src2 = np.transpose( X_train_2[0,:,:,:], (1, 2, 0))    
+    # plt.imshow(image_src2)
+    # # plt.show()
     
-        
+    
+    # print('789')    
     
     # =============================================================================
     # 
     # save the X_train and X_test
     # 
     # =============================================================================
+    
     return X_train, X_test, X_train_2
-    # out_X_train_file = '../result/06_SortedTrainTest/X_train_'+direction+'.npy'
+    # out_X_train_file = 'result/06_SortedTrainTest/X_train_'+direction+'.npy'
     # np.save(out_X_train_file, X_train)
     
-    # out_X_test_file = '../result/06_SortedTrainTest/X_test_'+direction+'.npy'
+    # out_X_test_file = 'result/06_SortedTrainTest/X_test_'+direction+'.npy'
     # np.save(out_X_test_file, X_test)
     
     
-# X_train, X_test, X_train_2 = main('W', '2024-08-27')
+# X_train, X_test, X_train_2 = main('W', '2024-09-11')
     

@@ -16,73 +16,77 @@ import os
 import warnings 
 warnings.filterwarnings('ignore')
 import pickle
-import time
+import configparser
+config = configparser.ConfigParser()
 
-
-    
-    
+# 讀取 config.ini 檔案
+config.read('config.ini')
 # =============================================================================
 # 
-# read original and mask image
+# create 2 directories
 # 
-# =============================================================================     
-
-def main(input_file_source, input_file_target, direction, prod_name):
-    # =============================================================================
-    # 
-    # create 2 directories
-    # 
-    # =============================================================================
-
-    FileLoc = '../result/03_SourceTarget/'+prod_name
-
+# =============================================================================
+def main(direction, input_file_source, input_file_target, prod_name):
+    FileLoc = 'result/03_SourceTarget/'+prod_name
+    
     try:
         os.mkdir(FileLoc)
     except OSError:
-        a=1
-        # print ("Creation of the directory %s failed" % FileLoc)
-    # else:
-        # print ("Successfully created the directory %s " % FileLoc)
+        print ("Creation of the directory %s failed" % FileLoc)
+    else:
+        print ("Successfully created the directory %s " % FileLoc)
         
         
-    FileLoc = '../result/04_CombinedData/'+prod_name
-
+    FileLoc = 'result/04_CombinedData/'+prod_name
+    
     try:
         os.mkdir(FileLoc)
     except OSError:
-        a=1
-        # print ("Creation of the directory %s failed" % FileLoc)
-    # else:
-        # print ("Successfully created the directory %s " % FileLoc)
-# input_file_source =   '../image_demo/2024-08-21_S1.BMP'
-# input_file_target =   '../image_demo/2024-08-21_S2.BMP'
-
+        print ("Creation of the directory %s failed" % FileLoc)
+    else:
+        print ("Successfully created the directory %s " % FileLoc)
+        
+        
+    # =============================================================================
+    # 
+    # read original and mask image
+    # 
+    # =============================================================================     
+    # direction = 'N'
+    
+    # input_file_source =   '../image_demo/2024-08-22_'+direction+'1.BMP'
+    # input_file_target =   '../image_demo/2024-08-22_'+direction+'2.BMP'
+    
     image_source  = cv2.imread(input_file_source)
     image_target = cv2.imread(input_file_target)
-    min_contour_area = 40  # Minimum contour area to consider a contour as an island
-    max_contour_area = 180  
-    out_dir = '../result/03_SourceTarget/'+prod_name+'/region_'
-    data_combined_dir = '../result/04_CombinedData/'+prod_name+'/region_'+direction+'_'
+    
+    min_contour_area = config['DEFAULT']['min_contour_area']  # Minimum contour area to consider a contour as an island
+    min_contour_area = int(min_contour_area)
+    max_contour_area = config['DEFAULT']['max_contour_area']
+    max_contour_area = int(max_contour_area)  
+    out_dir = 'result/03_SourceTarget/'+prod_name+'/region'
+    data_combined_dir = 'result/04_CombinedData/'+prod_name+'/region_'+direction+'_'
     
     # plt.imshow(image_source)
     # plt.show()
     outfile = out_dir + '0_original_source.jpg'
-    # print('\n',outfile)
+    ## print('\n',outfile)
     # cv2.imwrite(outfile, image_source)
+    
     # plt.imshow(image_target)
     # plt.show()
-    
     outfile = out_dir + '0_original_target.jpg'
-    # # print(outfile)
+    ## print(outfile)
     # cv2.imwrite(outfile, image_target)
+    
     df_combined = pd.DataFrame()
     for loop in range (1,7):
     
-        input_file_mask =      '../result/02_Region/'+prod_name+'/Region_'+direction+'_' + str(loop) + '_mask.png'
+        input_file_mask =      'result/02_Region/'+prod_name+'/region_'+direction+'_' + str(loop) + '_mask.png'
         index = 0
                
-        # print('\n')
-        # print(index,input_file_mask)
+        ## print('\n')
+        ## print(index,input_file_mask)
     
         image_mask = cv2.imread(input_file_mask)
         
@@ -96,8 +100,8 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # plt.imshow(image_mask_a)
         # plt.show()
         index = index + 1
-        outfile = out_dir +  str(loop) + '_' + str(index).zfill(2) + '.jpg'
-        # print(index, outfile)
+        outfile = out_dir+'_'+ direction + '_' +  str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        ## print(index, outfile)
         # cv2.imwrite(outfile, image_mask_a)
     
     
@@ -119,15 +123,15 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # plt.imshow(image_result_source)
         # plt.show()
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
-        # print(index, outfile)
+        outfile = out_dir +'_'+ direction + '_'  + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        ## print(index, outfile)
         # cv2.imwrite(outfile, image_result_source)
         
         # plt.imshow(image_result_target)
         # plt.show()
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
-        # print(index, outfile)
+        outfile = out_dir +'_'+ direction + '_'  + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        ## print(index, outfile)
         # cv2.imwrite(outfile, image_result_target)
         
     
@@ -155,8 +159,8 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # plt.imshow(image_result_source)
         # plt.show()
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
-        # print(index, outfile)
+        outfile = out_dir +'_'+ direction + '_'  + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        ## print(index, outfile)
         # cv2.imwrite(outfile, image_result_source) 
     
         
@@ -164,8 +168,8 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # plt.imshow(image_result_target)
         # plt.show()
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
-        # print(index, outfile)
+        outfile = out_dir +'_'+ direction + '_'  + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        ## print(index, outfile)
         # cv2.imwrite(outfile, image_result_target) 
     
     
@@ -186,13 +190,13 @@ def main(input_file_source, input_file_target, direction, prod_name):
         gray2 = gray1[y1:y2,x1:x2]
         
         # plt.imshow(gray1,cmap='gray')
-        # plt.show()
+        # # plt.show()
     
         # plt.imshow(gray2,cmap='gray')
         # plt.show()
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
-        # print(index, outfile)
+        outfile = out_dir +'_'+ direction + '_' + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        ## print(index, outfile)
         # cv2.imwrite(outfile, gray2) 
     
         gray5 = image_result_target[:,:,0].copy()
@@ -201,7 +205,7 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # plt.imshow(gray6,cmap='gray')
         # plt.show()
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        outfile = out_dir +'_'+ direction + '_' + str(loop) + '_' + str(index).zfill(2) + '.jpg'
         # print(index, outfile)
         # cv2.imwrite(outfile, gray6)     
     
@@ -220,7 +224,7 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # Show the plot
         # plt.show()
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        outfile = out_dir +'_'+ direction + '_' + str(loop) + '_' + str(index).zfill(2) + '.jpg'
         # print(index, outfile)
         # cv2.imwrite(outfile, thresholded)     
         
@@ -238,7 +242,7 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # plt.show()
         
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        outfile = out_dir +'_'+ direction + '_' + str(loop) + '_' + str(index).zfill(2) + '.jpg'
         # print(index, outfile)
         # cv2.imwrite(outfile, img_with_islands)     
         
@@ -274,11 +278,7 @@ def main(input_file_source, input_file_target, direction, prod_name):
         sift = cv2.SIFT_create()
         
         # Detect keypoints and descriptors
-        s_time = time.time()
         keypoints1, descriptors1 = sift.detectAndCompute(gray2, None)
-        e_time = time.time()
-        print('*********', e_time-s_time)
-        
         keypoints2, descriptors2 = sift.detectAndCompute(gray6, None)
         
         # Match descriptors
@@ -352,16 +352,16 @@ def main(input_file_source, input_file_target, direction, prod_name):
         df_2 = df_2.reset_index()
         
         
-        # fig = plt.figure(figsize=(6,12))
+        fig = plt.figure(figsize=(6,12))
         
-        # plt.tight_layout()
+        plt.tight_layout()
         # plt.show()
         
-        # ax1 = plt.subplot2grid((1,1), (0,0), colspan=1)
+        ax1 = plt.subplot2grid((1,1), (0,0), colspan=1)
         
         
-        # df_2.plot.scatter(x='src_x', y='src_y', color = 'g', lw = 4, ax=ax1,grid=True) 
-        # df_2.plot.scatter(x='dst_x', y='dst_y', color = 'r', lw = 4, ax=ax1,grid=True) 
+        df_2.plot.scatter(x='src_x', y='src_y', color = 'g', lw = 4, ax=ax1,grid=True) 
+        df_2.plot.scatter(x='dst_x', y='dst_y', color = 'r', lw = 4, ax=ax1,grid=True) 
         # plt.show()
         
         # =============================================================================
@@ -387,7 +387,7 @@ def main(input_file_source, input_file_target, direction, prod_name):
         # plt.show()
             
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        outfile = out_dir +'_'+ direction + str(loop) + '_' + str(index).zfill(2) + '.jpg'
         # print(index, outfile)
         # cv2.imwrite(outfile, src_image)    
         
@@ -407,7 +407,7 @@ def main(input_file_source, input_file_target, direction, prod_name):
         
             
         index = index + 1
-        outfile = out_dir + str(loop) + '_' + str(index).zfill(2) + '.jpg'
+        outfile = out_dir +'_'+ direction + str(loop) + '_' + str(index).zfill(2) + '.jpg'
         # print(index, outfile)
         # cv2.imwrite(outfile, dst_image)    
         
@@ -421,13 +421,13 @@ def main(input_file_source, input_file_target, direction, prod_name):
         index = index + 1
         outfile = data_combined_dir + str(loop) + '_img_loc.pkl'
         # print(index, outfile)
-
-            
+        
         df_location = df_2
         df_location = df_location.drop(columns=['index'])
         df_location['large_x'] = df_location['dst_x'] + x1
         df_location['large_y'] = df_location['dst_y'] + y1
-        
+        # 製作所有點位的pkl
+        df_combined = pd.concat([df_combined, df_location], axis=0, ignore_index=True)
         # Store the data in a dictionary
         data_combined = {
             'image1': gray2,
@@ -436,8 +436,6 @@ def main(input_file_source, input_file_target, direction, prod_name):
             'matrix1': homography
         }
         
-        df_combined = pd.concat([df_combined, df_location], axis=0, ignore_index=True)
-        # print('len(df_combined):=========', len(df_combined))
         # Save the data to a file using pickle
         with open(outfile, 'wb') as f:
             pickle.dump(data_combined, f)
@@ -450,17 +448,16 @@ def main(input_file_source, input_file_target, direction, prod_name):
         loaded_image1 = loaded_data['image1']
         loaded_image2 = loaded_data['image2']
         loaded_location = loaded_data['location']
-        # print(loaded_location.shape)
         loaded_matrix = loaded_data['matrix1']
+    
+    
     data_combined2 = {
         'location': df_combined
     }
+    
     return data_combined2
-    # with open('../result/04_CombinedData/'+prod_name+'/region_'+direction+'_img_loc.pkl', 'wb') as f:
+    # with open('../result/04_CombinedData/region_'+direction+'_img_loc.pkl', 'wb') as f:
     #     pickle.dump(data_combined2, f)
-        
-    # print('len(df_combined):=========', len(df_combined))
-
-# main('../../trainning/image_demo/2024-08-22_N1.BMP', '../images/partno1/sample/N.BMP', 'N')
     
-    
+    # with open('../result/04_CombinedData/region_'+direction+'_img_loc.pkl', 'rb') as f:
+    #     loaded_data = pickle.load(f)

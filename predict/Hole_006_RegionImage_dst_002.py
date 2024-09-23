@@ -16,7 +16,17 @@ import os
 import warnings 
 warnings.filterwarnings('ignore')
 import pickle
+import configparser
+config = configparser.ConfigParser()
 
+# 讀取 config.ini 檔案
+config.read('config.ini')
+
+# =============================================================================
+# 
+# create directory
+# 
+# =============================================================================
 
     
 # =============================================================================
@@ -24,41 +34,42 @@ import pickle
 # load the source and destination images and positions
 # 
 # =============================================================================
-
 def main(direction, prod_name):
-    FileLoc = '../result/05_RegionImage/'+prod_name
-    try:
-        os.mkdir(FileLoc)
-    except OSError:
-        print ("Creation of the directory %s failed" % FileLoc)
-    else:
-        print ("Successfully created the directory %s " % FileLoc)
-
-    data_combined_dir = '../result/04_CombinedData/'+prod_name+'/region_'+direction+'_'
+# direction = 'N'
+    data_combined_dir = 'result/04_CombinedData/'+prod_name+'/region_'+direction+'_'
     for loop in range(1, 7):
         
-        FileLoc = '../result/05_RegionImage/'+prod_name+'/Region_'+direction+'_'+str(loop)+'_dst'
+        FileLoc = 'result/05_RegionImage/'+prod_name
         try:
             os.mkdir(FileLoc)
         except OSError:
-            a=1
-            # print ("Creation of the directory %s failed" % FileLoc)
-        # else:
-            # print ("Successfully created the directory %s " % FileLoc)
-
-
-        FileLoc = '../result/05_RegionImage/'+prod_name+'/Full_'+direction+'_'+str(loop)+'_dst'
+            print ("Creation of the directory %s failed" % FileLoc)
+        else:
+            print ("Successfully created the directory %s " % FileLoc)
+        
+        
+        FileLoc = 'result/05_RegionImage/'+prod_name+'/Region_'+direction+'_'+str(loop)+'_dst'
         try:
             os.mkdir(FileLoc)
         except OSError:
-            a=1
-            # print ("Creation of the directory %s failed" % FileLoc)
-        # else:
-            # print ("Successfully created the directory %s " % FileLoc)
-            
+            print ("Creation of the directory %s failed" % FileLoc)
+        else:
+            print ("Successfully created the directory %s " % FileLoc)
+        
+        
+        FileLoc = 'result/05_RegionImage/'+prod_name+'/Full_'+direction+'_'+str(loop)+'_dst'
+        try:
+            os.mkdir(FileLoc)
+        except OSError:
+            print ("Creation of the directory %s failed" % FileLoc)
+        else:
+            print ("Successfully created the directory %s " % FileLoc)
+        
+           
+        
         
         infile = data_combined_dir + str(loop) + '_img_loc.pkl'
-        # print(infile)
+        print(infile)
         
         
         # To load the data back
@@ -69,7 +80,6 @@ def main(direction, prod_name):
         image_src = loaded_data['image1']
         image_dst = loaded_data['image2']
         df_location = loaded_data['location']
-        # print('==================',df_location.shape)
         Homography = loaded_data['matrix1']
         
         # plt.imshow(image_src,cmap='gray')
@@ -108,23 +118,24 @@ def main(direction, prod_name):
         image_region = image_dst_color.copy()  
         
         img = image_dst_aligned
-        out_region_dir = '../result/05_RegionImage/'+prod_name+'/Region_'+direction+'_'+str(loop)+'_dst/dst-'
-        out_full_dir = '../result/05_RegionImage/'+prod_name+'/Full_'+direction+'_'+str(loop)+'_dst/dst-'
+        out_region_dir = 'result/05_RegionImage/'+prod_name+'/Region_'+direction+'_'+str(loop)+'_dst/dst-'
+        out_full_dir = 'result/05_RegionImage/'+prod_name+'/Full_'+direction+'_'+str(loop)+'_dst/dst-'
         
-        out_NpFile =  '../result/05_RegionImage/'+prod_name+'/np-dst-'+direction+'-'+str(loop)+'.npy'
+        out_NpFile =  'result/05_RegionImage/'+prod_name+'/np-dst-'+direction+'-'+str(loop)+'.npy'
         
-        ra = 26
+        ra = 31
         rb = 16
         
-        # print('\n  there are ',len(df1), 'islands\n')
+        print('\n  there are ',len(df1), 'islands\n')
         
         for i in range (0,len(df1)):
         # for i in range (7,8):
         
             r2 = df1['src_x'].loc[i]
             r1 = df1['src_y'].loc[i]
-            # # print('=============== i=', i,r2,r1 )
-            
+            # print('=============== i=', i,r2,r1 )
+            large_x = r2-ra
+            large_y = r1-ra
            
             box_image = img[r1-ra:r1+ra,r2-ra:r2+ra]
             if(r2>=ra and r1>=ra):
@@ -136,30 +147,33 @@ def main(direction, prod_name):
             # loc_image[r1-ra:r1+ra,r2-ra:r2+ra,0] = 255
         
             # plt.imshow(box_image, cmap='gray')
-            # plt.show()
+            # # plt.show()
             
             
             # find the largest area in the box
             # Ensure it's binary
-            _, binary_image = cv2.threshold(box_image, 128, 255, cv2.THRESH_BINARY)
-            
+            # _, binary_image = cv2.threshold(box_image, 128, 255, cv2.THRESH_BINARY)
+            _, binary_image = cv2.threshold(box_image, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)
             # Find contours
             contours, _ = cv2.findContours(binary_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
          
-            min_contour_area = 30  # Minimum contour area to consider a contour as an island
-            max_contour_area = 500
+            min_contour_area = config['DEFAULT']['min_contour_area']  # Minimum contour area to consider a contour as an island
+            min_contour_area = int(min_contour_area)
+            max_contour_area = config['DEFAULT']['max_contour_area']
+            max_contour_area = int(max_contour_area) 
             
             islands = [cnt for cnt in contours if ((cv2.contourArea(cnt) > min_contour_area) \
                                                     and (cv2.contourArea(cnt) < max_contour_area) ) ]
-                
-            # # print(len(contours), len(islands))
+            islands2 = [cnt for cnt in contours if (cv2.contourArea(cnt) < min_contour_area)  ]
+            # if(len(islands2) > 0):
+            #     print(len(contours), len(islands2))
         
             # Draw the islands on the original image
             img_with_islands = cv2.cvtColor(box_image, cv2.COLOR_GRAY2BGR)  # Convert to BGR for colored drawing
             cv2.drawContours(img_with_islands, islands, -1, (255, 0, 0), 1)  # Draw islands in green color
         
             # plt.imshow(img_with_islands, cmap='gray')
-            # plt.show()
+            # # plt.show()
           
                 
             if (len(islands) > 1):
@@ -177,7 +191,7 @@ def main(direction, prod_name):
                     for j in range(0,len(islands[k])):
                         x = islands[k][j][0][0]
                         y = islands[k][j][0][1]
-                        # # print(i, j, x,y)
+                        # print(i, j, x,y)
                         x_points.append(x)
                         y_points.append(y)
                     
@@ -191,7 +205,7 @@ def main(direction, prod_name):
                     df_9.loc[k] = [k, x_mean, y_mean, dist]
                     
                 min_index = df_9['dist'].idxmin()
-                # # print('i, min_index = ', i, min_index)
+                # print('i, min_index = ', i, min_index)
                 del df_9
                 
             if (len(islands) == 1):
@@ -204,7 +218,7 @@ def main(direction, prod_name):
                 cv2.drawContours(mask, [islands[min_index]], -1, (1), -1)    
         
                 # plt.imshow(mask, cmap='gray')
-                # plt.show()
+                # # plt.show()
               
                 # Calculate moments for the largest contour
                 M = cv2.moments(mask)
@@ -216,7 +230,7 @@ def main(direction, prod_name):
                 else:
                     cx, cy = 0, 0  # set to some default value if no mass found
                 
-                # # print('cx, cy=', cx, cy)
+                # print('cx, cy=', cx, cy)
                 
                 # Find 4 corners of the image and mask
                 
@@ -227,29 +241,39 @@ def main(direction, prod_name):
                 
                 filename = out_full_dir + str(i).zfill(4) + '-' + str(mask_size) + '.png'
                 
-                # # print(i,r1,r2, filename)
+                # print(i,r1,r2, filename)
                       
                 image_region[r3-rb:r3+rb,r4-rb:r4+rb,2] = 255
                 # cv2.imwrite(filename, image_region)
                 # plt.imshow(image_region, cmap='gray')
-                # plt.show()
+                # # plt.show()
                      
                 try:
                
                     image_input = img[r3-rb:r3+rb,r4-rb:r4+rb].copy()
                     image_mask  = mask[cy-rb:cy+rb,cx-rb:cx+rb].copy()
+                    # new_cx = large_x + cx
+                    # new_cy = large_y + cy
+                    # np_dst[i,:,:] = image_dst_aligned[new_cy - rb : new_cy + rb, new_cx - rb : new_cx + rb]
                     image_output = cv2.multiply(image_input, image_mask)
                     # plt.imshow(image_output, cmap='gray')
                     # plt.show()
         
                     np_dst[i,:,:] = image_output[:,:]
                     
+                    
                     filename = out_region_dir + str(i).zfill(4) + '-' + str(mask_size) + '.png'
                     # cv2.imwrite(filename, image_output)
-                    del image_output
+                    # # cv2.imwrite(filename, image_dst_aligned[new_cy - rb : new_cy + rb, new_cx - rb : new_cx + rb])
+                    # del image_dst_aligned[new_cy - rb : new_cy + rb, new_cx - rb : new_cx + rb]
             
-                except:
-                    
+                except  Exception as e:
+                    print(e)
+                    # print(image_input.shape)
+                    # print(image_mask.shape, cy-rb, cy+rb,cx-rb, cx+rb)
+                    # mask[0:19, 7:39] = 1
+                    # plt.imshow(mask)
+                    # plt.show()
                     print('------------- error in -------> ',i,r1,r2, filename)
         
         # =============================================================================
@@ -263,27 +287,29 @@ def main(direction, prod_name):
         
                 
                 filename = out_full_dir + str(i).zfill(4) + '-0.png'
-                # # print('****************', filename)
-                # # print(i,r1,r2, filename)
+                
+                # print(i,r1,r2, filename)
                       
                 image_region[r1-rb:r1+rb,r2-rb:r2+rb,2] = 255
                 # cv2.imwrite(filename, image_region)
                 # plt.imshow(image_region, cmap='gray')
-                # plt.show()
+                # # plt.show()
                      
                 try:
                
                     image_output = img[r1-rb:r1+rb,r2-rb:r2+rb]
                     # plt.imshow(image_output, cmap='gray')
-                    # plt.show()
+                    # # plt.show()
             
-                    np_dst[i,:,:] = 0
+                    np_dst[i,:,:] = image_output[:,:]
+                    # np_dst[i,:,:] = 0
+                    print(filename)
                     filename = out_region_dir + str(i).zfill(4) + '-0.png'
                     # cv2.imwrite(filename, image_output)
                     del image_output
             
-                except:
-                    
+                except  Exception as e:
+                    print(e)
                     print('------------- island ==0  -------> ',i,r1,r2, filename)
         
         
@@ -295,4 +321,4 @@ def main(direction, prod_name):
         loaded_array = np.load(out_NpFile)
         
         
-# main('N')
+# tmp_dst = np.load('result/05_RegionImage/2024-09-11/np-dst-W-'+str(loop)+'.npy')

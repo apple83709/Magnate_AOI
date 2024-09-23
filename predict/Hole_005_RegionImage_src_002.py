@@ -23,7 +23,7 @@ import pickle
 # 
 # =============================================================================
 
-FileLoc = '../result/05_RegionImage'
+FileLoc = 'result/05_RegionImage'
 try:
     os.mkdir(FileLoc)
 except OSError:
@@ -31,7 +31,7 @@ except OSError:
 else:
     print ("Successfully created the directory %s " % FileLoc)
     
-FileLoc = '../result/05_RegionImage/Region_4_src'
+FileLoc = 'result/05_RegionImage/Region_4_src'
 try:
     os.mkdir(FileLoc)
 except OSError:
@@ -40,7 +40,7 @@ else:
     print ("Successfully created the directory %s " % FileLoc)
 
 
-FileLoc = '../result/05_RegionImage/Full_4_src'
+FileLoc = 'result/05_RegionImage/Full_4_src'
 try:
     os.mkdir(FileLoc)
 except OSError:
@@ -57,7 +57,7 @@ else:
 # =============================================================================
 
 
-data_combined_dir = '../result/04_CombinedData/region_'
+data_combined_dir = 'result/04_CombinedData/region_'
 for loop in range(1, 7):
     infile = data_combined_dir + str(loop) + '_img_loc.pkl'
     print(infile)
@@ -95,10 +95,10 @@ for loop in range(1, 7):
     image_region = image_src_color.copy()  
     
     img = image_src
-    out_region_dir = '../result/05_RegionImage/Region_4_src/src-'
-    out_full_dir = '../result/05_RegionImage/Full_4_src/src-'
+    out_region_dir = 'result/05_RegionImage/Region_4_src/src-'
+    out_full_dir = 'result/05_RegionImage/Full_4_src/src-'
     
-    out_NpFile =  '../result/05_RegionImage/np-src-'+str(loop)+'.npy'
+    out_NpFile =  'result/05_RegionImage/np-src-'+str(loop)+'.npy'
     
     ra = 26
     rb = 16
