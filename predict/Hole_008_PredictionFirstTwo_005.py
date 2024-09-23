@@ -197,14 +197,14 @@ class MyDataset(Dataset):
 # =============================================================================
 
 
-out_X_train_file = '../result/06_SortedTrainTest/X_train.npy'
+out_X_train_file = 'result/06_SortedTrainTest/X_train.npy'
 np_1 = np.load(out_X_train_file)
 train_image_in_numpy = np_1.astype(float)/1.0
 
 
-out_X_test_file = '../result/06_SortedTrainTest/X_test.npy'
+out_X_test_file = 'result/06_SortedTrainTest/X_test.npy'
 
-# out_X_test_file = '../result/06_SortedTrainTest/X_test.npy'
+# out_X_test_file = 'result/06_SortedTrainTest/X_test.npy'
 
 np_2 = np.load(out_X_test_file)
 test_image_in_numpy = np_2.astype(float)/1.0
@@ -275,7 +275,7 @@ plt.show()
 
 
 
-# fig.savefig('../result/PADIM_demo_image_1.jpg')
+# fig.savefig('result/PADIM_demo_image_1.jpg')
 
 
 
@@ -637,7 +637,7 @@ print(f"Program executed in: {execution_time} seconds")
 # plt.show()
 
 
-# # fig.savefig('../PADIM_demo_image_2.jpg')
+# # fig.savefig('PADIM_demo_image_2.jpg')
 
 
 

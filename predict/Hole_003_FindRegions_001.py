@@ -15,11 +15,11 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-input_file_1 = '../image_demo/2024-08-21_S1.BMP'
-input_file_2 = '../result/01_DrawLine/drawn_image.jpg'
-input_file_3 = '../result/01_DrawLine/black_image_with_lines.jpg'
+input_file_1 = 'image_demo/2024-08-21_S1.BMP'
+input_file_2 = 'result/01_DrawLine/drawn_image.jpg'
+input_file_3 = 'result/01_DrawLine/black_image_with_lines.jpg'
 
-FileLoc = '../result/02_Region'
+FileLoc = 'result/02_Region'
 try:
     os.mkdir(FileLoc)
 except OSError:
@@ -37,11 +37,11 @@ image_3 = cv2.imread(input_file_3)
 image_3a = image_3[:,:,0] 
 
 plt.imshow(image_1)
-plt.show()
+# plt.show()
 plt.imshow(image_2)
-plt.show()
+# plt.show()
 plt.imshow(image_3a,cmap='gray')
-plt.show()
+# plt.show()
 
 
 # =============================================================================
@@ -65,7 +65,7 @@ dilated_mask = cv2.dilate(thresh, kernel, iterations = 1)
 plt.imshow(dilated_mask,cmap='gray')
 
 # Show the plot
-plt.show()
+# plt.show()
 
 
 
@@ -87,11 +87,11 @@ for i, region in enumerate(regions):
     cv2.drawContours(mask, [region], -1, (255), thickness=cv2.FILLED)
     
     # Save the mask image
-    cv2.imwrite(f'../result/02_Region/region_{i}_mask.png', mask)
+    cv2.imwrite(f'result/02_Region/region_{i}_mask.png', mask)
     plt.imshow(mask,cmap='gray')
     
     # Show the plot
-    plt.show()
+    # plt.show()
     print('region = ',i)
 
 

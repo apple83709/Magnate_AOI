@@ -76,10 +76,10 @@ cv2.imwrite('../result/01_DrawLine/black_image_with_lines.jpg', param['black_img
 
 
 plt.imshow(param['img'])
-plt.show()
+# plt.show()
 
 plt.imshow( param['black_img'])
-plt.show()
+# plt.show()
 
 
 

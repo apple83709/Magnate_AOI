@@ -137,18 +137,18 @@ all_start_time = time.time()
 # directions = ['S', 'W', 'E', 'N']
 directions = ['N']
 for direction in directions:
-    Hole_004.main('../image_demo/2024-08-22_'+direction+'1.BMP', '../image_demo/2024-08-22_'+direction+'2.BMP', direction)
+    Hole_004.main('image_demo/2024-08-22_'+direction+'1.BMP', 'image_demo/2024-08-22_'+direction+'2.BMP', direction)
     Hole_006.main(direction)
     Hole_007.main(direction)
     all_fails = []
     # for loop in range(1, 7):
         # print('================'+direction+'方第'+str(loop)+'塊: ================')
-    out_X_train_file = '../result/06_SortedTrainTest/X_train_'+direction+'.npy'
+    out_X_train_file = 'result/06_SortedTrainTest/X_train_'+direction+'.npy'
     np_1 = np.load(out_X_train_file)
     train_image_in_numpy = np_1.astype(float)/255.0
 
 
-    out_X_test_file = '../result/06_SortedTrainTest/X_test_'+direction+'.npy'
+    out_X_test_file = 'result/06_SortedTrainTest/X_test_'+direction+'.npy'
     np_2 = np.load(out_X_test_file)
     print('np_2 size:' + str(np_2.shape))
     test_image_in_numpy = np_2.astype(float)/255.0
@@ -179,7 +179,7 @@ for direction in directions:
     #     plt.imshow(image_for_matplotlib )
     #     plt.axis(False)
     # plt.show()
-    # fig.savefig('../demo_image_1.jpg')
+    # fig.savefig('demo_image_1.jpg')
 
     # fig=plt.figure(figsize=(20, 15))
     # columns = 4; rows = 4
@@ -191,9 +191,9 @@ for direction in directions:
     #     plt.imshow(image_for_matplotlib )
     #     plt.axis(False)
     # plt.show()
-    # fig.savefig('../demo_image_2.jpg')
+    # fig.savefig('demo_image_2.jpg')
 
-    # fig.savefig('../result/PADIM_demo_image_1.jpg')
+    # fig.savefig('result/PADIM_demo_image_1.jpg')
 
 
 
@@ -255,7 +255,7 @@ for direction in directions:
         # embedding_vectors.size() =  torch.Size([209, 100, 3136])
        
         embedding_vectors_reduced_train = embedding_vectors_reduced.clone().numpy()
-        with open('../../trainning/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy', 'wb') as f:
+        with open('trainning/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy', 'wb') as f:
             pickle.dump(embedding_vectors_reduced_train, f)
         
         mean = torch.mean(embedding_vectors_reduced, dim=0).numpy()
@@ -278,7 +278,7 @@ for direction in directions:
         with open(train_feature_filepath, 'wb') as f:
             pickle.dump(train_outputs_reduced, f)
         
-        torch.save(model.state_dict(), '../../trainning/result/models/save_'+direction +'.pt')
+        torch.save(model.state_dict(), 'trainning/result/models/save_'+direction +'.pt')
             
     if (flag_train ==0):
         
@@ -287,9 +287,9 @@ for direction in directions:
         with open(train_feature_filepath, 'rb') as f:
             train_outputs_reduced = pickle.load(f)
         
-        # embedding_vectors_reduced_train = np.load('../result/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy')
-        embedding_vectors_reduced_train = np.load('../../trainning/result/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy')
-        weight = torch.load('../../trainning/result/models/save_'+direction+'.pt', map_location=device)
+        # embedding_vectors_reduced_train = np.load('result/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy')
+        embedding_vectors_reduced_train = np.load('trainning/result/embedding_vectors_reduced_trains/embedding_vectors_reduced_train_'+direction+'.npy')
+        weight = torch.load('trainning/result/models/save_'+direction+'.pt', map_location=device)
         # weight = torch.load('save.pt')
         model.load_state_dict(weight)
         model.eval()
@@ -417,7 +417,7 @@ for direction in directions:
         diagonal_elements = np.diagonal(maha_full).tolist()
         dist_list.append(diagonal_elements)
 
-    # with open('../../trainning/result/con_invs/conv_invs_'+direction+'.pkl', 'wb') as f:
+    # with open('trainning/result/con_invs/conv_invs_'+direction+'.pkl', 'wb') as f:
     #   pickle.dump(conv_invs, f)
     dist_list = np.array(dist_list).transpose(1, 0).reshape(B,56,56)
 
@@ -476,12 +476,11 @@ for direction in directions:
         plt.axis(False)
     plt.show()
 
-    fig.savefig('../demo_image_3.jpg')
+    fig.savefig('demo_image_3.jpg')
 
     
     fail = []
-    threshhold = 0.7
-    print(scores_min.shape[0])
+    threshhold = 100/max_score
     for j in range(0, scores_min.shape[0]):
         max_value = np.max(scores_min[j])
         if max_value > threshhold:
@@ -489,18 +488,16 @@ for direction in directions:
         else:
             has_positive = False
             
-        if has_positive == True:
-            fail.append(j)
-    print('====fail[0]: ', fail[0])
-    colored_image = cm.jet(scores_min[fail[0]])
-    padim_image = Image.fromarray((colored_image * 255).astype(np.uint8))
-    padim_array = np.array(padim_image)
-    plt.imshow(padim_array)
-    plt.axis(False)
-    plt.show()
-    cv2.imwrite('scores_min_'+str(fail[0]) + '.jpg', padim_array)  
+        if has_positive == True:     
+            for x in range(3):  
+                for y in range(3):  
+                    arr = scores_min[j]
+                    sub_array = arr[x*75:(x+1)*75, y*75:(y+1)*75]
+                    if(np.max(sub_array)>threshhold):
+                        # 計算第幾個點
+                        fail.append(j * 9 + (x + 1) * (y + 1))
     
-    infile = '../result/04_CombinedData/region_'+direction + '_img_loc.pkl'
+    infile = 'result/04_CombinedData/region_'+direction + '_img_loc.pkl'
     with open(infile, 'rb') as f:
         loaded_data = pickle.load(f)
 
@@ -509,7 +506,7 @@ for direction in directions:
         # print('region_' + str(loop) + '_img_loc: ', loaded_data['location'].iloc[i].large_x)
 
 # 添加紅色方塊
-image = cv2.imread('../image_demo/2024-08-22_'+direction+'2.BMP')
+image = cv2.imread('image_demo/2024-08-22_'+direction+'2.BMP')
 for index in range(0, len(all_fails)):
     large_x = all_fails[index][0]
     large_y = all_fails[index][1]

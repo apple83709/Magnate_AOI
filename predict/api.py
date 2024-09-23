@@ -38,16 +38,16 @@ CORS(app)
 @app.route('/dir', methods=['GET'])
 def get_directories():
     current_directory = os.getcwd()
-    directories = os.listdir(f'../result/models')
+    directories = os.listdir(f'result/models')
     return {'dir': directories}
 
 
-@app.route('/pred', methods=['GET'])
-def get_prediction():
+@app.route('/pred/<prod_name>', methods=['GET'])
+def get_prediction(prod_name):
     # delete all files in directory: images/partno1/pred/*.*
-    prod_name = request.args.get('value1')
-    os.system('del /S /Q .\\images\\partno1\\pred\\*.*')
-    print('get_sample')
+    # prod_name = request.args.get('value1')
+    os.system('del /S /Q .\\images\\2024-09-10\\pred\\*.*')
+    print('============',prod_name)
     return predict(prod_name)
     # return {'prediction': [
     #     {'position': 'N', 'fail_count': 3},
@@ -56,15 +56,15 @@ def get_prediction():
     #     {'position': 'W', 'fail_count': 2},
     # ]}
 
-@app.route('/sample', methods=['GET'])
-def get_sample():
+@app.route('/sample/<prod_name>', methods=['GET'])
+def get_sample(prod_name):
     # delete all files in directory: images/partno1/pred/*.*
-    os.system('del /S /Q .\\images\\partno1\\sample\\*.*')
+    os.system('del /S /Q .\\images\\2024-09-06\\sample\\*.*')
     device_info = {}
-    device_info['2676017D53E2'] = 'E'
-    device_info['2676017E15AE'] = 'S'
-    device_info['2676017E189A'] = 'N'
-    device_info['2676017D0FF9'] = 'W'
+    device_info['2676017D53E2'] = 'E' # 24990690
+    device_info['2676017E15AE'] = 'S' # 25040302
+    device_info['2676017E189A'] = 'N' # 25041050
+    device_info['2676017D0FF9'] = 'W' # 24973305
     instance = pylon.TlFactory.GetInstance()
     print(instance)
     # Get all the available devices
@@ -82,7 +82,7 @@ def get_sample():
 
         # 調整相機曝光時間
         camera.ExposureAuto.SetValue('Off')
-        camera.ExposureTime.SetValue(100000)
+        camera.ExposureTime.SetValue(200000)
 
         # 拍照存檔
         camera.StartGrabbing()
@@ -90,7 +90,7 @@ def get_sample():
         if grabResult.GrabSucceeded():
             # Access the image data
             image = grabResult.Array
-            img_path = f'..\\images\\partno1\\sample\\{device_info[guid]}.BMP'
+            img_path = 'images/2024-09-06/sample/'+device_info[guid]+'.BMP'
             cv2.imwrite(img_path, image)
             print(img_path)
         grabResult.Release()
@@ -107,12 +107,12 @@ def predict(prod_name):
     # directions = ['W']
     for direction in directions:
         # 訓練用照片
-        input_source = '../trainning/image_demo/'+prod_name+'_'+direction+'1.BMP'
+        input_source = 'trainning/image_demo/'+prod_name+'_'+direction+'1.BMP'
         # 測試用照片
-        # input_target = '../images/partno1/sample/'+prod_name+'_'+direction+'.BMP'
-        input_target = '../images/partno1/sample/'+direction+'.BMP'
+        # input_target = 'images/partno1/sample/'+prod_name+'_'+direction+'.BMP'
+        input_target = 'images/'+prod_name+'/sample/'+direction+'.BMP'
         
-        all_location = Hole_004.main(input_source, input_target, direction, prod_name)
+        all_location = Hole_004.main(direction, input_source, input_target, prod_name)
         Hole_006.main(direction, prod_name)
         
         X_train, X_test, X_train_2 = Hole_007.main(direction, prod_name)
